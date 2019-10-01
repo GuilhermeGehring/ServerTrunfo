@@ -125,24 +125,17 @@ public class Server {
                 System.out.println("Mensagem recebida do cliente: " + msgCliente);
                 //escrita
 
-                String[] protocolo = msgCliente.split(";");
+                String[] protocolo = msgCliente.split(":");
                 operacao = protocolo[0];
                 Mensagem resposta = new Mensagem(operacao.toUpperCase()+"RESPONSE");
                 switch (estado) {
 
                     case CONECTADO:
+                        System.out.println("Operação atual: " + operacao);
                         switch (operacao) {
-                            case "OI":
-                                try {
-                                  Mensagem mCliente = Mensagem.parseString(msgCliente);
-                                  if (mCliente != null) {
-                                      String nome = mCliente.getParam("nome");
-                                      resposta = new Mensagem("OIRESPONSE");
-                                      resposta.setStatus(Status.OK);
-                                      resposta.setParam("mensagem", "Oi " + nome + " Bem-vindo");
-                                  }
-                                } catch (Exception e) {
-                                }
+                            case "TCHAU":
+                                resposta.setStatus(Status.OK);
+//                                response += ":400";
                                 //validando protocolo (parse)
                                 /*try {
                                     String nome = protocolo[1].split(":")[1];
@@ -164,7 +157,7 @@ public class Server {
                                 break;
                             case "LOGIN":
                                 try {
-                                    if(protocolo[2].equals("123")){
+                                    if(protocolo[1].equals("gui") && protocolo[2].equals("123")){
                                          estado = Estados.AUTENTICADO;
                                      //responde ao cliente
                                      }
@@ -178,7 +171,7 @@ public class Server {
                             default:
                                 //mensagem inválida
                                 response += operacao.toUpperCase() + "RESPONSE";
-                                response += ";400";
+                                response += ":400";
                                 System.out.println("Parando comunicacao com cliente " + socket.getInetAddress());
                                 break;
                         }
@@ -213,7 +206,7 @@ public class Server {
                         break;
                 }
                 //enviar a resposta ao cliente
-                //output.writeUTF(response);
+//                output.writeUTF(response);
                 output.writeUTF(resposta.toString());
                 output.flush();
             } while (!operacao.equals("pare"));
