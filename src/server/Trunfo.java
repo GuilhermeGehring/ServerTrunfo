@@ -20,6 +20,15 @@ public class Trunfo {
     public Trunfo() {
     }
 
+    public Trunfo(String nome, String tipo, int defesa, int drible, int velocidade, int chute) {
+        this.nome = nome;
+        this.tipo = tipo;
+        this.defesa = defesa;
+        this.drible = drible;
+        this.velocidade = velocidade;
+        this.chute = chute;
+    }
+
     public String getNome() {
         return nome;
     }

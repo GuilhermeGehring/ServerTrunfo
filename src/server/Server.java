@@ -19,8 +19,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import util.ArquivoTexto;
 import util.Estados;
 import util.Mensagem;
 import util.Status;
@@ -125,7 +124,7 @@ public class Server {
                 System.out.println("Mensagem recebida do cliente: " + msgCliente);
                 //escrita
 
-                String[] protocolo = msgCliente.split(":");
+                String[] protocolo = msgCliente.split(";");
                 operacao = protocolo[0];
                 Mensagem resposta = new Mensagem(operacao.toUpperCase()+"RESPONSE");
                 switch (estado) {
@@ -133,45 +132,31 @@ public class Server {
                     case CONECTADO:
                         System.out.println("Operação atual: " + operacao);
                         switch (operacao) {
-                            case "TCHAU":
-                                resposta.setStatus(Status.OK);
-//                                response += ":400";
-                                //validando protocolo (parse)
-                                /*try {
-                                    String nome = protocolo[1].split(":")[1];
-
-                                    //escrevendo a resposta
-                                    if (nome == null) {
-                                        //faltou um parâmetro
-                                        response += "OIRESPONSE";
-                                        response += "\n400";
-                                    } else {
-                                        response += "OIRESPONSE";
-                                        response += "\n200";
-                                        response += "\nmensagem:Olá, " + nome + "!";
-                                    }
+                            case "SAIR":
+                                try {
+                                    resposta.setStatus(Status.OK);
                                 } catch (Exception e) {
-                                    response += "OIRESPONSE";
-                                    response += "\n400";
-                                }*/
+                                    resposta.setStatus(Status.ERROR);
+                                }
                                 break;
                             case "LOGIN":
                                 try {
-                                    if(protocolo[1].equals("gui") && protocolo[2].equals("123")){
+                                    if(protocolo[1].equals("usuario:gui") && protocolo[2].equals("senha:123")){
                                          estado = Estados.AUTENTICADO;
-                                     //responde ao cliente
-                                     }
-                                     
-
+                                        resposta.setStatus(Status.OK);
+                                    } else {
+                                        resposta.setStatus(Status.ERROR);
+                                        resposta.setParam("erro", "Usuário ou senha inválidos");
+                                    }
                                 } catch (Exception e) {
-                                    response += "OIRESPONSE";
-                                    response += "\n400";
+                                    resposta.setStatus(Status.ERROR);
+                                    resposta.setParam("erro", "Ocorreu um erro ao realizar o login");
                                 }
                                 break;
                             default:
                                 //mensagem inválida
-                                response += operacao.toUpperCase() + "RESPONSE";
-                                response += ":400";
+                                resposta.setStatus(Status.NOTFOUND);
+                                resposta.setParam("erro", "Opção inválida");
                                 System.out.println("Parando comunicacao com cliente " + socket.getInetAddress());
                                 break;
                         }
@@ -179,27 +164,28 @@ public class Server {
                     case AUTENTICADO:
                         switch (operacao) {
                             //tratamento somente das mensagens possíveis no estado AUTENTICADO
-                            case "??":
+                            case "JOGAR":
                                 //validando protocolo (parse)
                                 try {
-                                    //tratamento da mensagem
-
+                                    String caminho = "../cartas.txt";
+                                    ArrayList<Trunfo> cartas = ArquivoTexto.leitor(caminho);
                                 } catch (Exception e) {
-                                    //tratamento de erros
-                                    response += "OIRESPONSE";
-                                    response += "\n400";
+                                    resposta.setStatus(Status.ERROR);
                                 }
                                 break;
                                 //exemplo com troca de estados
                             case "LOGOUT":
                                 estado = Estados.CONECTADO;
-                                response +=  "LOGOUTRESPONSE";
-                                response += "\n200";
+                                try {
+                                    resposta.setStatus(Status.OK);
+                                } catch (Exception e) {
+                                    resposta.setStatus(Status.ERROR);
+                                }
                                 break;
                             default:
                                 //mensagem inválida
-                                response += operacao.toUpperCase() + "RESPONSE";
-                                response += "\n400";
+                                resposta.setStatus(Status.NOTFOUND);
+                                resposta.setParam("erro", "Opção inválida");
                                 System.out.println("Parando comunicacao com cliente " + socket.getInetAddress());
                                 break;
                         }
