@@ -167,8 +167,12 @@ public class Server {
                             case "JOGAR":
                                 //validando protocolo (parse)
                                 try {
-                                    String caminho = "../cartas.txt";
+                                    String caminho = "/home/guilherme/NetBeansProjects/ClienteTrunfo/src/cartas.txt";
                                     ArrayList<Trunfo> cartas = ArquivoTexto.leitor(caminho);
+                                    for (Trunfo carta : cartas) {
+                                        System.out.println(carta.toString());
+                                    }
+                                    resposta.setStatus(Status.OK);
                                 } catch (Exception e) {
                                     resposta.setStatus(Status.ERROR);
                                 }

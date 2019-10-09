@@ -25,7 +25,7 @@ public class ArquivoTexto {
         while (true) {
             if (linha != null) {
                 String carta[] = linha.split(";");
-                if (carta.length > 6)
+                if (carta.length == 6)
                     cartas.add(new Trunfo(carta[0], carta[1], Integer.parseInt(carta[2]), Integer.parseInt(carta[3]), Integer.parseInt(carta[4]), Integer.parseInt(carta[5])));
             } else
                 break;

@@ -10,5 +10,5 @@ package util;
  * @author elder
  */
 public enum Estados {
-    DESCONECTADO, CONECTADO, AUTENTICADO, SAIR   
+    JOGANDO, CONECTADO, AUTENTICADO, SAIR   
 }

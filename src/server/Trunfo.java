@@ -76,5 +76,11 @@ public class Trunfo {
     public void setChute(int chute) {
         this.chute = chute;
     }
+
+    @Override
+    public String toString() {
+        return nome + "{" + tipo + ", defesa:" + defesa + ", drible:" + drible + ", chute:" + chute + "}";
+    }
+    
     
 }
