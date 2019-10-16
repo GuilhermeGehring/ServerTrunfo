@@ -39,19 +39,21 @@ public class Mensagem implements Serializable{
     {
         return operacao;
     }
+
+    public void setOperacao(String operacao) {
+        this.operacao = operacao;
+    }
     
     public void setStatus(Status s)
     {
         this.status = s;
     }
+    
     public Status getStatus()
     {
         return status;
     }
-    /*
-        "NOME" --> "José"
-        "IDADE" --> 35
-     */
+    
     public void setParam( String chave, String valor )
     {
         params.put( chave, valor );
@@ -63,7 +65,7 @@ public class Mensagem implements Serializable{
     }
     
     public static Mensagem parseString(String protocolo){
-        String p[] = protocolo.split(":");
+        String p[] = protocolo.split(";");
         Mensagem m = new Mensagem(p[0]);
         
         try {

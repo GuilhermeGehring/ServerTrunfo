@@ -5,6 +5,8 @@
  */
 package server;
 
+import util.Mensagem;
+
 /**
  *
  * @author 20171pf.cc0178
@@ -79,7 +81,11 @@ public class Trunfo {
 
     @Override
     public String toString() {
-        return nome + "{" + tipo + ", defesa:" + defesa + ", drible:" + drible + ", chute:" + chute + "}";
+        return "Trunfo{" + "nome=" + nome + ", tipo=" + tipo + ", defesa=" + defesa + ", drible=" + drible + ", velocidade=" + velocidade + '}';
+    }
+    
+    public String request() {
+        return nome + ";" + tipo + ";" + defesa + ";" + drible + ";" + chute + ";" + velocidade + ";";
     }
     
     

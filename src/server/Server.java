@@ -110,17 +110,16 @@ public class Server {
             output.flush();
             System.out.println("Conexao recebida, inciando protocolo...");
             //iniciar a conversa --- SINCRONO
-            String msgResposta = "";
             String operacao = "";
             //Armazena o estado da comunicação com o cliente
             Estados estado = Estados.CONECTADO;
+            ArrayList<Trunfo> baralho = new ArrayList<>();
+            Mensagem mensagem = new Mensagem();
 
-            boolean primeira = true;
             //event loop
             do {
                 //leitura
                 String msgCliente = input.readUTF(); //bloqueante
-                String response = "";
                 System.out.println("Mensagem recebida do cliente: " + msgCliente);
                 //escrita
 
@@ -166,12 +165,8 @@ public class Server {
                             //tratamento somente das mensagens possíveis no estado AUTENTICADO
                             case "JOGAR":
                                 //validando protocolo (parse)
+                                estado = Estados.JOGANDO;
                                 try {
-                                    String caminho = "/home/guilherme/NetBeansProjects/ClienteTrunfo/src/cartas.txt";
-                                    ArrayList<Trunfo> cartas = ArquivoTexto.leitor(caminho);
-                                    for (Trunfo carta : cartas) {
-                                        System.out.println(carta.toString());
-                                    }
                                     resposta.setStatus(Status.OK);
                                 } catch (Exception e) {
                                     resposta.setStatus(Status.ERROR);
@@ -186,17 +181,89 @@ public class Server {
                                     resposta.setStatus(Status.ERROR);
                                 }
                                 break;
+                            case "CARTAS":
+                                try {
+                                    resposta.setStatus(Status.OK);
+                                    output.writeUTF(resposta.toString());
+                                    output.flush();
+                                    msgCliente = input.readUTF(); //bloqueante  
+                                    while (!msgCliente.equals("CARTASEND")) {
+                                        mensagem = Mensagem.parseString(msgCliente);
+                                        baralho.add(new Trunfo(mensagem.getParam("nome"), mensagem.getParam("tipo"), Integer.parseInt(mensagem.getParam("defesa")) , Integer.parseInt(mensagem.getParam("drible")), Integer.parseInt(mensagem.getParam("velocidade")), Integer.parseInt(mensagem.getParam("chute"))));
+                                        msgCliente = input.readUTF(); //bloqueante
+                                    }
+                                    resposta.setOperacao("CARTASENDRESPONSE");
+                                    for (Trunfo carta : baralho) {
+                                        System.out.println(carta.toString());
+                                    }
+                                } catch (Exception e) {
+                                    System.out.println("Ocorreu um erro" + e.getMessage());
+                                    resposta.setStatus(Status.ERROR);
+                                }
+                                break;
                             default:
                                 //mensagem inválida
                                 resposta.setStatus(Status.NOTFOUND);
                                 resposta.setParam("erro", "Opção inválida");
-                                System.out.println("Parando comunicacao com cliente " + socket.getInetAddress());
+                                break;
+                        }
+                        break;
+                    case JOGANDO:
+                        switch (operacao) {
+                            //tratamento somente das mensagens possíveis no estado AUTENTICADO
+                            case "JOGADA":
+                                resposta.setOperacao("PERDEURESPONSE");
+                                mensagem = Mensagem.parseString(msgCliente);
+                                Trunfo cartaCliente = new Trunfo(mensagem.getParam("nome"), mensagem.getParam("tipo"), Integer.parseInt(mensagem.getParam("defesa")) , Integer.parseInt(mensagem.getParam("drible")), Integer.parseInt(mensagem.getParam("velocidade")), Integer.parseInt(mensagem.getParam("chute")));
+                                Trunfo cartaServidor = baralho.remove(0);
+                                switch (mensagem.getParam("opcao")) {
+                                    case "1":
+                                        if (cartaCliente.getChute() > cartaServidor.getChute())
+                                            resposta.setOperacao("GANHOURESPONSE");
+                                        break;
+                                    case "2":
+                                        if (cartaCliente.getDefesa() > cartaServidor.getDefesa())
+                                            resposta.setOperacao("GANHOURESPONSE");
+                                        break;
+                                    case "3":
+                                        if (cartaCliente.getDrible() > cartaServidor.getDrible())
+                                            resposta.setOperacao("GANHOURESPONSE");
+                                        break;
+                                    case "4":
+                                        if (cartaCliente.getVelocidade() > cartaServidor.getVelocidade())
+                                            resposta.setOperacao("GANHOURESPONSE");
+                                        break;
+                                }
+                                
+                                resposta.setStatus(Status.OK);
+                                if (resposta.getOperacao().equals("GANHOURESPONSE")) {
+                                    output.writeUTF(resposta.toString());
+                                    resposta = new Mensagem("CARTA;" + cartaServidor.request());
+                                    if (baralho.isEmpty()) {
+                                        output.writeUTF(resposta.toString());
+                                        resposta.setOperacao("TERMINARRESPONSE");
+                                        resposta.setStatus(Status.OK);
+                                        resposta.setParam("msg", "Você Venceu");
+                                    }
+                                } else {
+                                    baralho.add(cartaCliente);
+                                    baralho.add(cartaServidor);
+                                }
+                                    
+                                break;
+                            case "TERMINAR":
+                                estado = Estados.AUTENTICADO;
+                                resposta.setStatus(Status.OK);
+                                resposta.setParam("msg", "Você Perdeu");
+                                break;
+                            default:
+                                resposta.setStatus(Status.NOTFOUND);
+                                resposta.setParam("erro", "Opção inválida");
                                 break;
                         }
                         break;
                 }
                 //enviar a resposta ao cliente
-//                output.writeUTF(response);
                 output.writeUTF(resposta.toString());
                 output.flush();
             } while (!operacao.equals("pare"));
